@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace _01 {
@@ -39,8 +38,20 @@ namespace _01 {
         Random r = new Random();
 
         void shuffle() {
-            for ( int i = 0; i < this.array.Length; i++ ) {
-                flip( i, this.r.Next( this.array.Length ) );
+            if ( this.r.NextDouble() > .5 ) {
+                for ( int i = 0; i < this.array.Length; i++ ) {
+                    this.array[i] = i;
+                }
+                for ( int i = 0; i < this.array.Length; i++ ) {
+                    flip( i, this.r.Next( this.array.Length ) );
+                    Thread.Sleep( (int) ( 1000F / S ) );
+                }
+            }
+            else {
+              for ( int i = 0; i < this.array.Length; i++ ) {
+                  this.array[i] = this.r.Next( this.array.Length);
+                  Thread.Sleep( (int) ( 1000F / S ) );
+              }
             }
         }
 
@@ -51,7 +62,7 @@ namespace _01 {
                 Thread.Sleep( 1000 );
 
                 var s = this.r.Next( this._sorts.Count );
-                this.sortere = _sorts[s].ToString();
+                this.sortere = this._sorts[s].ToString();
                 this._sorts[s].sort();
 
                 //new bubble() { array = this.array }.sort();
@@ -66,9 +77,9 @@ namespace _01 {
 
 
         public MainClass() {
-            //this._sorts.Add( new bubble() );
+            this._sorts.Add( new bubble() );
             this._sorts.Add( new heap() );
-            //this._sorts.Add( new quick() );
+            this._sorts.Add( new quick() );
 
             foreach ( var sort in this._sorts ) {
                 sort.array = this.array;
@@ -113,7 +124,7 @@ namespace _01 {
             //h = (int) ( h * multi );
 
             for ( int i = 0; i < this.array.Length; i++ ) {
-                this.I.DrawRect( new RectangleF( (float) i * s, (float) h, (float) s, (float) -this.array[i] * multi * s ), fromvaule( i, this.array[i], ( 1 / (float) this.array.Length ) * 5 ) );
+                this.I.DrawRect( new RectangleF( (float) i * s, (float) h, (float) s, (float) -this.array[i] * multi * s ), fromvaule( i, this.array[i], ( 1 / (float) this.array.Length ) * 6 ) );
             }
 
             this.I.DrawString( sortere, new PointF( 10, this.Window.ClientSize.Height - 20 ), Color.BlueViolet );
@@ -240,7 +251,7 @@ namespace _01 {
 
     class bubble : ISorter {
         private const int S = MainClass.S;
-        
+
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -249,7 +260,7 @@ namespace _01 {
         /// <inheritdoc />
         public void sort() {
             for ( int write = 0; write < this.array.Length; write++ ) {
-                Thread.Sleep( (int) ( 1000F / S ) );
+                    Thread.Sleep( (int) ( 1000F / S ) );
                 for ( int sort = 0; sort < this.array.Length - 1; sort++ ) {
                     if ( array[sort] > array[sort + 1] ) {
                         var temp = array[sort + 1];
@@ -264,7 +275,6 @@ namespace _01 {
     }
 
     class quick : ISorter {
-        
         private const int S = MainClass.S;
 
         private int[] _array;
@@ -278,15 +288,14 @@ namespace _01 {
         }
 
         private static int teile(int links, int rechts, ref int[] daten) {
-            int i = links;
+            int i     = links;
             int j     = rechts - 1;
             int pivot = daten[rechts];
 
             do {
                 while ( daten[i] <= pivot && i < rechts ) i += 1;
-                while ( daten[j] >= pivot && j > links ) j -= 1;
+                while ( daten[j] >= pivot && j > links ) j  -= 1;
 
-                
                 Thread.Sleep( (int) ( 1000F / S ) );
 
                 if ( i < j ) {
@@ -298,7 +307,7 @@ namespace _01 {
 
             if ( daten[i] > pivot ) {
                 int z = daten[i];
-                daten[i] = daten[rechts];
+                daten[i]      = daten[rechts];
                 daten[rechts] = z;
             }
 
