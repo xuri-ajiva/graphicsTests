@@ -2,10 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
+using OpenTK.Graphics.OpenGL;
+using static _01.Helper;
 
 namespace _01 {
     internal static class Program {
@@ -20,76 +24,133 @@ namespace _01 {
         }
     }
 
+    public static class Helper {
+        public const long UNO_MIL_L = 10000;
+        public const long UNO_SEC_L = UNO_MIL_L / 2;
+
+        public static void SleepMicro(long t) {
+            long ticks = DateTime.Now.Ticks;
+            while ( ( DateTime.Now.Ticks - ticks ) < t ) ;
+        }
+
+        public static void Sleep(long length) {
+            long nano = 2000000000L / length;
+            //nano /= TimeSpan.TicksPerMillisecond;
+            //nano *= 100L;
+            //
+            //var sw = Stopwatch.StartNew();
+            //while ( sw.ElapsedMilliseconds < nano) ;
+            finaliseUpdate( nano );
+        }
+
+        static long nanoTime() {
+            long nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
+        }
+
+        private static void finaliseUpdate(long nanoSeconds) {
+            long timeEspand;
+            long startTime = nanoTime();
+            do {
+                timeEspand = nanoTime() - startTime;
+            } while ( timeEspand < nanoSeconds );
+        }
+
+        public static void SleepMil(long mu) { SleepMicro( mu * UNO_MIL_L ); }
+        public static void SleepSec(long mu) { SleepMicro( mu * UNO_MIL_L ); }
+    }
 
     internal class MainClass : OpenTKFramework.MainClass {
         public const int           S       = 1000;
-        private      string        sortere = "null";
-        public       List<ISorter> _sorts  = new List<ISorter>();
+        private      string        _sortere = "null";
+        public       List<ISorter> Sorts  = new List<ISorter>();
 
-        int[] array = new int[S];
+        private CounterArray<int> _array = new CounterArray<int>( new int[S] );
 
-
-        void flip(int p1, int p2) {
-            int t = this.array[p1];
-            this.array[p1] = this.array[p2];
-            this.array[p2] = t;
+        private void Flip(int p1, int p2) {
+            int t = this._array[p1];
+            this._array[p1] = this._array[p2];
+            this._array[p2] = t;
         }
 
-        Random r = new Random();
+        private Random _r = new Random();
 
-        void shuffle() {
-            if ( this.r.NextDouble() > .5 ) {
-                for ( int i = 0; i < this.array.Length; i++ ) {
-                    this.array[i] = i;
+        private void Shuffle() {
+            this._sortere = nameof(Shuffle);
+            if ( this._r.NextDouble() > .5 ) {
+                for ( int i = 0; i < this._array.Length; i++ ) {
+                    this._array[i] = i;
                 }
-                for ( int i = 0; i < this.array.Length; i++ ) {
-                    flip( i, this.r.Next( this.array.Length ) );
-                    Thread.Sleep( (int) ( 1000F / S ) );
+
+                for ( int i = 0; i < this._array.Length; i++ ) {
+                    Flip( i, this._r.Next( this._array.Length ) );
+                    Sleep( this._array.Length*2 );
                 }
             }
             else {
-              for ( int i = 0; i < this.array.Length; i++ ) {
-                  this.array[i] = this.r.Next( this.array.Length);
-                  Thread.Sleep( (int) ( 1000F / S ) );
-              }
+                for ( int i = 0; i < this._array.Length; i++ ) {
+                    this._array[i] = this._r.Next( this._array.Length );
+                    Sleep( this._array.Length*2 );
+                }
             }
         }
 
-        void sorter() {
-            while ( true ) {
-                shuffle();
+        private void Sorter() {
+            for ( int i = 0;; i++ ) {
+                this._gets = 0;
+                this._sets = 0;
+                Shuffle();
 
                 Thread.Sleep( 1000 );
 
-                var s = this.r.Next( this._sorts.Count );
-                this.sortere = this._sorts[s].ToString();
-                this._sorts[s].sort();
+                this._gets = 0;
+                this._sets = 0;
 
-                //new bubble() { array = this.array }.sort();
+                this._sortere = this.Sorts[i % this.Sorts.Count].GetType().Name;
+                this.Sorts[i % this.Sorts.Count].Sort();
 
-                //new merge() { array = this.array }.sort();
-
-                //new heap() { array = this.array }.sort();
-
-                Thread.Sleep( 1000 );
+                Thread.Sleep( 2000 );
             }
         }
 
 
         public MainClass() {
-            this._sorts.Add( new bubble() );
-            this._sorts.Add( new heap() );
-            this._sorts.Add( new quick() );
+            this._array.Get += GetCounter;
+            this._array.Set += SetCounter;
+            
+            //this.Sorts.Add( new counting() );
+            this.Sorts.Add( new Bitonic() );
+            //this.Sorts.Add( new Tree() );
+            this.Sorts.Add( new Quick3() );
+            this.Sorts.Add( new OddEven() );
+            this.Sorts.Add( new Stooge() );
+            this.Sorts.Add( new Binary() );
+            this.Sorts.Add( new Time() );
+            this.Sorts.Add( new Shell() );
+            this.Sorts.Add( new Cocktail() );
+            this.Sorts.Add( new Radix() );
+            this.Sorts.Add( new Insertion() );
+            this.Sorts.Add( new My() );
+            this.Sorts.Add( new Selection() );
+            this.Sorts.Add( new Heap() );
+            //this._sorts.Add( new phole() );
+            this.Sorts.Add( new Merge() );
+            this.Sorts.Add( new Comb() );
+            this.Sorts.Add( new Quick() );
+            this.Sorts.Add( new Cycle() );
+            this.Sorts.Add( new Bubble() );
 
-            foreach ( var sort in this._sorts ) {
-                sort.array = this.array;
+            foreach ( var sort in this.Sorts ) {
+                sort.MArray = this._array;
             }
 
-            for ( int i = 0; i < this.array.Length; i++ ) {
-                this.array[i] = i;
+            for ( int i = 0; i < this._array.Length; i++ ) {
+                this._array[i] = i;
             }
 
-            Create( new Size( 2000, 200 ) );
+            Create( new Size( 2000, 800 ) );
 
             this.Window.VSync = VSyncMode.Off;
 
@@ -100,9 +161,17 @@ namespace _01 {
 
             this.Window.Location = new Point( 300, 100 );
 
-            new Thread( sorter ).Start();
+            new Thread( Sorter ).Start();
+
             Run();
         }
+
+        private void SetCounter(int index, int value) { this._sets++; }
+
+        private void GetCounter(int index) { this._gets++; }
+
+        private long _gets = 0L;
+        private long _sets = 0L;
 
         #region Overrides of MainClass
 
@@ -117,216 +186,35 @@ namespace _01 {
 
             var h = this.Window.ClientSize.Height;
             var w = this.Window.ClientSize.Width;
-            var s = (float) w / (float) this.array.Length;
+            var s = (float) w / (float) this._array.Length;
+
+            //s = s < 1 ? 1 : s;
 
             var multi = (float) h / (float) w;
 
             //h = (int) ( h * multi );
 
-            for ( int i = 0; i < this.array.Length; i++ ) {
-                this.I.DrawRect( new RectangleF( (float) i * s, (float) h, (float) s, (float) -this.array[i] * multi * s ), fromvaule( i, this.array[i], ( 1 / (float) this.array.Length ) * 6 ) );
+            for ( int i = 0; i < this._array.Length; i++ ) {
+                var value = this._array.GetNoEvent( i );
+
+                //this.I.DrawRect( new RectangleF( (float) i * s, (float) h, (float) s, (float) -value * multi * s ), Fromvaule( i, value, ( 1 / (float) this._array.Length ) * Math.PI * 2 ) );
+                this.I.DrawRect( new RectangleF( (float) i * s, (float) h/2 + value * multi * s /2F, (float)s < 1 ? 1 : s, (float) -value * multi * s ), Fromvaule( i, value, ( 1 / (float) this._array.Length ) * Math.PI * 2 ) );
             }
 
-            this.I.DrawString( sortere, new PointF( 10, this.Window.ClientSize.Height - 20 ), Color.BlueViolet );
+            this.I.DrawString( "Algorithms: "+this._sortere, new PointF( 10,  20 ), Color.BlueViolet );
+            this.I.DrawString( "Gats: "+this._gets, new PointF( 10,  40 ), Color.BlueViolet );
+            this.I.DrawString( "Sets: "+this._sets, new PointF( 10,  55 ), Color.BlueViolet );
         }
 
-        Color fromvaule(int i, int h, double v) {
+        private Color Fromvaule(int i, int h, double v) {
             var a = v;
             return Color.FromArgb( NSin( h * a, Math.Sin ), NSin( h * a, Math.Cos ), NSin( h * a, d => -Math.Sin( d ) ) );
         }
 
-        int NSin(double i, Func<double, double> mathFunc) { return (int) ( ( mathFunc( i ) + 1D ) / 2D * 255D ); }
+        private int NSin(double i, Func<double, double> mathFunc) { return (int) ( ( mathFunc( i ) + 1D ) / 2D * 255D ); }
 
         public override void Update(object sender, FrameEventArgs e) { }
 
         #endregion
-    }
-
-    class heap : ISorter {
-        private const int S = MainClass.S;
-
-        #region Implementation of ISorter
-
-        /// <inheritdoc />
-        public int[] array { get; set; }
-
-        /// <inheritdoc />
-        public void sort() { heapSort( array, array.Length ); }
-
-        static void heapSort(int[] arr, int n) {
-            for ( int i = n / 2 - 1; i >= 0; i-- ) {
-                Thread.Sleep( (int) ( 1000F / S ) );
-                heapify( arr, n, i );
-            }
-
-            for ( int i = n - 1; i >= 0; i-- ) {
-                int temp = arr[0];
-                arr[0] = arr[i];
-                arr[i] = temp;
-
-                Thread.Sleep( (int) ( 1000F / S ) );
-                heapify( arr, i, 0 );
-            }
-        }
-
-        static void heapify(int[] arr, int n, int i) {
-            int largest                                           = i;
-            int left                                              = 2 * i + 1;
-            int right                                             = 2 * i + 2;
-            if ( left  < n && arr[left]  > arr[largest] ) largest = left;
-            if ( right < n && arr[right] > arr[largest] ) largest = right;
-            if ( largest != i ) {
-                int swap = arr[i];
-                arr[i]       = arr[largest];
-                arr[largest] = swap;
-                heapify( arr, n, largest );
-            }
-        }
-
-        #endregion
-    }
-
-    class merge : ISorter {
-        #region Implementation of ISorter
-
-        /// <inheritdoc />
-        public int[] array { get; set; }
-
-        /// <inheritdoc />
-        public void sort() { array = MergeSort( array.ToList() ).ToArray(); }
-
-
-        private static List<int> MergeSort(List<int> unsorted) {
-            if ( unsorted.Count <= 1 ) return unsorted;
-
-            List<int> left  = new List<int>();
-            List<int> right = new List<int>();
-
-            int middle = unsorted.Count / 2;
-            for ( int i = 0; i < middle; i++ ) //Dividing the unsorted list
-            {
-                left.Add( unsorted[i] );
-            }
-
-            for ( int i = middle; i < unsorted.Count; i++ ) {
-                right.Add( unsorted[i] );
-            }
-
-            left  = MergeSort( left );
-            right = MergeSort( right );
-            return Merge( left, right );
-        }
-
-        private static List<int> Merge(List<int> left, List<int> right) {
-            List<int> result = new List<int>();
-
-            while ( left.Count > 0 || right.Count > 0 ) {
-                if ( left.Count > 0 && right.Count > 0 ) {
-                    if ( left.First() <= right.First() ) //Comparing First two elements to see which is smaller
-                    {
-                        result.Add( left.First() );
-                        left.Remove( left.First() ); //Rest of the list minus the first element
-                    }
-                    else {
-                        result.Add( right.First() );
-                        right.Remove( right.First() );
-                    }
-                }
-                else if ( left.Count > 0 ) {
-                    result.Add( left.First() );
-                    left.Remove( left.First() );
-                }
-                else if ( right.Count > 0 ) {
-                    result.Add( right.First() );
-
-                    right.Remove( right.First() );
-                }
-            }
-
-            return result;
-        }
-
-        #endregion
-    }
-
-    class bubble : ISorter {
-        private const int S = MainClass.S;
-
-        #region Implementation of ISorter
-
-        /// <inheritdoc />
-        public int[] array { get; set; }
-
-        /// <inheritdoc />
-        public void sort() {
-            for ( int write = 0; write < this.array.Length; write++ ) {
-                    Thread.Sleep( (int) ( 1000F / S ) );
-                for ( int sort = 0; sort < this.array.Length - 1; sort++ ) {
-                    if ( array[sort] > array[sort + 1] ) {
-                        var temp = array[sort + 1];
-                        array[sort + 1] = array[sort];
-                        array[sort]     = temp;
-                    }
-                }
-            }
-        }
-
-        #endregion
-    }
-
-    class quick : ISorter {
-        private const int S = MainClass.S;
-
-        private int[] _array;
-
-        private static void quicksort(int links, int rechts, ref int[] daten) {
-            if ( links < rechts ) {
-                int teiler = teile( links, rechts, ref daten );
-                quicksort( links, teiler - 1, ref daten );
-                quicksort( teiler        + 1, rechts, ref daten );
-            }
-        }
-
-        private static int teile(int links, int rechts, ref int[] daten) {
-            int i     = links;
-            int j     = rechts - 1;
-            int pivot = daten[rechts];
-
-            do {
-                while ( daten[i] <= pivot && i < rechts ) i += 1;
-                while ( daten[j] >= pivot && j > links ) j  -= 1;
-
-                Thread.Sleep( (int) ( 1000F / S ) );
-
-                if ( i < j ) {
-                    int z = daten[i];
-                    daten[i] = daten[j];
-                    daten[j] = z;
-                }
-            } while ( i < j );
-
-            if ( daten[i] > pivot ) {
-                int z = daten[i];
-                daten[i]      = daten[rechts];
-                daten[rechts] = z;
-            }
-
-            return i;
-        }
-
-        #region Implementation of ISorter
-
-        /// <inheritdoc />
-        public int[] array { get => this._array; set => this._array = value; }
-
-        /// <inheritdoc />
-        public void sort() { quicksort( 0, _array.Length - 1, ref this._array ); }
-
-        #endregion
-    }
-
-    interface ISorter {
-        int[] array { get; set; }
-        void  sort();
     }
 }
