@@ -20,7 +20,7 @@ namespace _01 {
         private static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault( false );
-            new MainClass( );
+            new MainClass();
         }
     }
 
@@ -202,14 +202,15 @@ namespace _01 {
 
             this.Window.Closing += delegate(object sender, CancelEventArgs args) { Environment.Exit( 0 ); };
 
-           new Thread( Sorter ).Start();multy = 2;
+            new Thread( Sorter ).Start();
+            multy = 2;
             //new Thread( TestOneSort ).Start(); Helper.multy = .5;
 
             h = this.Window.ClientSize.Height;
             w = this.Window.ClientSize.Width;
             s = (float) w / (float) this._array.Length;
             m = (float) h / (float) w;
-            
+
             Run();
         }
 
@@ -232,35 +233,82 @@ namespace _01 {
             this.I.ClearScreen( Color.Black );
             //h = (int) ( h * multi );
 
-            Render( 0,this._array.Length );
-
+            Render( 0, this._array.Length );
 
             this.I.DrawString( "Algorithms: " + this._sortere, new PointF( 10, 20 ), Color.BlueViolet );
             this.I.DrawString( "Gats: "       + this._gets,    new PointF( 10, 40 ), Color.BlueViolet );
             this.I.DrawString( "Sets: "       + this._sets,    new PointF( 10, 55 ), Color.BlueViolet );
         }
-        
+
         public static int   h;
         public static int   w;
         public static float s;
         public static float m;
 
         void Render(int start, int amount) {
-            var p = (this._array.Length / w)/2;
+            var p = ( this._array.Length / w ) / 2;
 
-            for ( int i = start; i < start + amount; i+= p ) {
+            for ( int i = start; i < start + amount; i += p ) {
                 var value = this._array.GetNoEvent( i );
                 DrawRectImp( i, value );
             }
         }
 
+        public DrawMode drawMode = DrawMode.Triangle;
+
         void DrawRectImp(int px, int height) {
             var i     = px;
             var value = height;
 
-            //this.I.DrawRect( new RectangleF( (float) i * s, (float) h, (float) s, (float) -value * m * s ), Fromvaule( i, value, ( 1 / (float) this._array.Length ) * Math.PI * 2 ) );
+            float x = 0;
+            float y = 0;
+            float a = 0;
+            float b = 0;
 
-            this.I.DrawRect( new RectangleF( (float) i * s, (float) h / 2 + value * m * s / 2F, (float) s < 1 ? 1 : s, (float) -value * m * s ), Fromvaule( i, value, ( 1 / (float) this._array.Length ) * Math.PI * 2 ) );
+            var c = Fromvaule( i, value, ( 1F / this._array.Length ) * Math.PI * 2 );
+
+            a = s < 1 ? 1 : s;
+
+            switch (this.drawMode) {
+                case DrawMode.Triangle:
+                    x = i * s;
+                    y = h/2f + (value/2f)*m*s;
+                    b = -value * m * s;
+                    this.I.DrawRect( new RectangleF( x, y, a, b), c );
+                    break;
+                case DrawMode.Stairs:
+                    x = i * s;
+                    y = h;
+                    b = -value * m * s;
+                    this.I.DrawRect( new RectangleF( x, y, a, b ), c );
+                    break;
+                case DrawMode.Cycle:
+                    var theta = 2.0f * Math.PI * px / this._array.Length;
+
+                    var xa = ( w / 2F ) * Math.Cos( theta ); //calculate the x component
+                    var ya = ( h / 2F ) * Math.Sin( theta ); //calculate the y component
+                    x = ( (float) xa ) + w / 2F;
+                    y = (float) ya     + h / 2F;
+                    this.I.Draw( new List<Vector2>() { new Vector2( x, y ), new Vector2( x + ( x < w / 2F ? +a : -a ), y + ( y < h / 2F ? -a : a ) ), new Vector2( w / 2F, h / 2F ) }, c, PrimitiveType.Polygon );
+                    break;
+                case DrawMode.Flip:
+                    x = i * s      / 2;
+                    y = 1F         * h;
+                    b = -value * m * s;
+                    this.I.DrawRect( new RectangleF( x,     y, a, b ), c );
+                    this.I.DrawRect( new RectangleF( w - x, y, a, b ), c );
+                    break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+
+            //
+        }
+
+        public enum DrawMode {
+            Triangle,
+            Stairs,
+            Cycle,
+            Flip
         }
 
         private Color Fromvaule(int i, int h, double v) {

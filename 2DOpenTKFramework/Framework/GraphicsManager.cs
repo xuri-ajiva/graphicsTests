@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using NAudio.Wave;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTKFramework.Framework;
 
@@ -167,6 +169,22 @@ namespace GameFramework {
         }
 
         #endregion
+        
+        
+        public void Draw(List<Vector2> points, Color c, PrimitiveType dm = PrimitiveType.Polygon) {
+            if ( !this.isInitialized ) {
+                Error( "Trying to draw rect without intializing graphics manager!" );
+            }
+
+            IncreaseDepth();
+
+            GL.Color3( c.R, c.G, c.B );
+            GL.Begin( dm );
+            foreach ( var p in points ) {
+                GL.Vertex3( p.X, p.Y, this.currentDepth );
+            }
+            GL.End();
+        }
 
         public void DrawRect(Rectangle rect, Color c, PrimitiveType dm = PrimitiveType.Quads) {
             RectangleF rf = new RectangleF( rect.X, rect.Y, rect.Width, rect.Height );
@@ -279,7 +297,6 @@ namespace GameFramework {
 
             GL.End();
         }
-
 
         public void DrawString(string str, PointF position, Color color) {
             if ( !this.isInitialized ) {
