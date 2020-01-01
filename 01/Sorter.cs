@@ -87,7 +87,7 @@ namespace _01 {
                 }
 
                 k++;
-                Sleep( this.MArray.Length * 2 );
+                Sleep( this.MArray.Length * 4 );
             }
 
             while ( i < n1 ) {
@@ -343,7 +343,7 @@ namespace _01 {
         #endregion
     }
 
-    internal class phole : ISorter {
+    internal class Pigeonhole : ISorter {
         public void pigeonhole_sort(CounterArray<int> arr, int n) {
             int min = arr[0];
             int max = arr[0];
@@ -382,8 +382,8 @@ namespace _01 {
         #endregion
     }
 
-    class Selection : ISorter {
-        void sort() {
+    internal class Selection : ISorter {
+        private void sort() {
             int n = this.MArray.Length;
 
             for ( int i = 0; i < n - 1; i++ ) {
@@ -410,7 +410,7 @@ namespace _01 {
         #endregion
     }
 
-    class Insertion : ISorter {
+    internal class Insertion : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -419,7 +419,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { sort(); }
 
-        void sort() {
+        private void sort() {
             int n = this.MArray.Length;
             for ( int i = 1; i < n; ++i ) {
                 Sleep( this.MArray.Length );
@@ -436,7 +436,7 @@ namespace _01 {
             }
         }
 
-        void insertionSortRecursive(int n) {
+        private void insertionSortRecursive(int n) {
             if ( n <= 1 ) return;
 
             insertionSortRecursive( n - 1 );
@@ -456,7 +456,7 @@ namespace _01 {
         #endregion
     }
 
-    class counting : ISorter {
+    internal class Counting : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -468,7 +468,7 @@ namespace _01 {
             countSort();
         }
 
-        void countSort() {
+        private void countSort() {
             int   max    = this.MArray.InnerArray.Max();
             int   min    = this.MArray.InnerArray.Min();
             int   range  = max - min + 1;
@@ -495,7 +495,7 @@ namespace _01 {
         #endregion
     }
 
-    class Radix : ISorter {
+    internal class Radix : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -541,7 +541,7 @@ namespace _01 {
         #endregion
     }
 
-    class Cocktail : ISorter {
+    internal class Cocktail : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -550,7 +550,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { cocktailSort(); }
 
-        void cocktailSort() {
+        private void cocktailSort() {
             bool swapped = true;
             int  start   = 0;
             int  end     = this.MArray.Length;
@@ -591,16 +591,19 @@ namespace _01 {
         #endregion
     }
 
-    class Bitonic : ISorter {
+    internal class Bitonic : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
         public CounterArray<int> MArray { get; set; }
 
         /// <inheritdoc />
-        public void Sort() { bitonicSort( 0, this.MArray.Length, 1 ); new Selection(){MArray = this.MArray}.Sort(); }
+        public void Sort() {
+            bitonicSort( 0, this.MArray.Length, 1 );
+            new Selection() { MArray = this.MArray }.Sort();
+        }
 
-        static void Swap <T>(ref T lhs, ref T rhs) {
+        private static void Swap <T>(ref T lhs, ref T rhs) {
             T temp;
             temp = lhs;
             lhs  = rhs;
@@ -646,7 +649,7 @@ namespace _01 {
         #endregion
     }
 
-    class Shell : ISorter {
+    internal class Shell : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -655,7 +658,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { sort(); }
 
-        int sort() {
+        private int sort() {
             int n = this.MArray.Length;
 
             for ( int gap = n / 2; gap > 0; gap /= 2 ) {
@@ -676,7 +679,7 @@ namespace _01 {
         #endregion
     }
 
-    class Time : ISorter {
+    internal class Time : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -756,7 +759,7 @@ namespace _01 {
         #endregion
     }
 
-    class Binary : ISorter {
+    internal class Binary : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -765,7 +768,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { sort(); }
 
-        void sort() {
+        private void sort() {
             for ( int i = 1; i < this.MArray.Length; i++ ) {
                 int x = this.MArray[i];
 
@@ -782,7 +785,7 @@ namespace _01 {
         #endregion
     }
 
-    class Gnome : ISorter {
+    internal class Gnome : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -791,7 +794,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { gnomeSort( this.MArray.Length ); }
 
-        void gnomeSort(int n) {
+        private void gnomeSort(int n) {
             int index = 0;
 
             while ( index < n ) {
@@ -813,7 +816,7 @@ namespace _01 {
         #endregion
     }
 
-    class Stooge : ISorter {
+    internal class Stooge : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -823,7 +826,7 @@ namespace _01 {
         public void Sort() { stoogesort( 0, this.MArray.Length - 1 ); }
 
 
-        void stoogesort(int l, int h) {
+        private void stoogesort(int l, int h) {
             if ( l >= h ) return;
             if ( this.MArray[l] > this.MArray[h] ) {
                 int t = this.MArray[l];
@@ -844,7 +847,7 @@ namespace _01 {
         #endregion
     }
 
-    class Tree : ISorter {
+    internal class Tree : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -857,7 +860,7 @@ namespace _01 {
             tree.inorderRec( tree.root );
         }
 
-        class GFG {
+        private class GFG {
             public class Node {
                 public int  key;
                 public Node left, right;
@@ -872,9 +875,9 @@ namespace _01 {
 
             public GFG() { this.root = null; }
 
-            void insert(int key) { this.root = insertRec( this.root, key ); }
+            private void insert(int key) { this.root = insertRec( this.root, key ); }
 
-            Node insertRec(Node root, int key) {
+            private Node insertRec(Node root, int key) {
                 if ( root == null ) {
                     root = new Node( key );
                     return root;
@@ -905,7 +908,7 @@ namespace _01 {
         #endregion
     }
 
-    class OddEven : ISorter {
+    internal class OddEven : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -946,7 +949,7 @@ namespace _01 {
         #endregion
     }
 
-    class Quick3 : ISorter {
+    internal class Quick3 : ISorter {
         #region Implementation of ISorter
 
         /// <inheritdoc />
@@ -955,7 +958,7 @@ namespace _01 {
         /// <inheritdoc />
         public void Sort() { quicksort( 0, this.MArray.Length - 1 ); }
 
-        void swap(int lhs, int rhs) {
+        private void swap(int lhs, int rhs) {
             int temp = this.MArray[lhs];
             this.MArray[lhs] = this.MArray[rhs];
             this.MArray[rhs] = temp;
@@ -990,8 +993,8 @@ namespace _01 {
             }
 
             swap( i, r );
-            
-            Sleep( this.MArray.Length /2 );
+
+            Sleep( this.MArray.Length / 2 );
             j = i - 1;
             for ( int k = l; k < p; k++, j-- ) swap( k, j );
 
@@ -1003,11 +1006,127 @@ namespace _01 {
             if ( r <= l ) return;
 
             int i = 0, j = 0;
-            
-            Sleep( this.MArray.Length /2 );
+
+            Sleep( this.MArray.Length / 2 );
             partition( l, r, ref i, ref j );
             quicksort( l, j );
             quicksort( i, r );
+        }
+
+        #endregion
+    }
+
+    class Introsort : ISorter {
+        #region Implementation of ISorter
+
+        /// <inheritdoc />
+        public CounterArray<int> MArray { get; set; }
+
+        /// <inheritdoc />
+        public void Sort() { IntroSort(); }
+
+        private void IntroSort() {
+            int partitionSize = Partition( 0, this.MArray.Length - 1 );
+
+            if ( partitionSize < 16 ) {
+                InsertionSort();
+            }
+            else if ( partitionSize > ( 2 * Math.Log( this.MArray.Length ) ) ) {
+                HeapSort();
+            }
+            else {
+                QuickSortRecursive( 0, this.MArray.Length - 1 );
+            }
+        }
+
+        private void InsertionSort() {
+            for ( int i = 1; i < this.MArray.Length; ++i ) {
+                int j = i;
+                Sleep( MArray.Length );
+
+                while ( ( j > 0 ) ) {
+                    if ( this.MArray[j - 1] > this.MArray[j] ) {
+                        this.MArray[j - 1] ^= this.MArray[j];
+                        this.MArray[j]     ^= this.MArray[j - 1];
+                        this.MArray[j                       - 1] ^= this.MArray[j];
+
+                        --j;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void HeapSort() {
+            int heapSize = this.MArray.Length;
+
+            for ( int p = ( heapSize - 1 ) / 2; p >= 0; --p ) {
+                Sleep( MArray.Length );
+                MaxHeapify( heapSize, p );
+            }
+
+            for ( int i = this.MArray.Length - 1; i > 0; --i ) {
+                Sleep( MArray.Length );
+                int temp = this.MArray[i];
+                this.MArray[i] = this.MArray[0];
+                this.MArray[0] = temp;
+
+                --heapSize;
+                MaxHeapify( heapSize, 0 );
+            }
+        }
+
+        private void MaxHeapify(int heapSize, int index) {
+            int left    = ( index + 1 ) * 2 - 1;
+            int right   = ( index + 1 ) * 2;
+            int largest = 0;
+
+            if ( left < heapSize && this.MArray[left] > this.MArray[index] )
+                largest = left;
+            else
+                largest = index;
+
+            if ( right < heapSize && this.MArray[right] > this.MArray[largest] ) largest = right;
+
+            if ( largest != index ) {
+                int temp = this.MArray[index];
+                this.MArray[index]   = this.MArray[largest];
+                this.MArray[largest] = temp;
+
+                MaxHeapify( heapSize, largest );
+            }
+        }
+
+        private void QuickSortRecursive(int left, int right) {
+            if ( left < right ) {
+                Sleep( MArray.Length );
+                int q = Partition( left, right );
+                QuickSortRecursive( left, q - 1 );
+                QuickSortRecursive( q       + 1, right );
+            }
+        }
+
+        private int Partition(int left, int right) {
+            int pivot = this.MArray[right];
+            int temp;
+            int i = left;
+
+            for ( int j = left; j < right; ++j ) {
+                if ( this.MArray[j] <= pivot ) {
+                    temp           = this.MArray[j];
+                    this.MArray[j] = this.MArray[i];
+                    this.MArray[i] = temp;
+                    i++;
+                    Sleep( MArray.Length );
+                }
+            }
+
+            this.MArray[right] = this.MArray[i];
+            this.MArray[i]     = pivot;
+
+            return i;
         }
 
         #endregion
@@ -1018,8 +1137,8 @@ namespace _01 {
         void              Sort();
     }
 
-    class CounterArray <T> {
-        public CounterArray(T[] array) { this.innerArray = array; }
+    internal class CounterArray <T> {
+        public CounterArray(ref T[] array) { this.innerArray = array; }
 
         private T[]                 innerArray;
         public event Action<int>    Get;
