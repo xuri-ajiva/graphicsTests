@@ -12,14 +12,25 @@ namespace _01 {
             while ( ( DateTime.Now.Ticks - ticks ) < t ) ;
         }
 
+        private static int DoNotSellpFor = 0;
+
         public static void Sleep(long Rlength) {
+            if ( DoNotSellpFor > 0 ) {
+                DoNotSellpFor--;
+                return;
+            }
+
             long nano = (long) ( 1000000000L * multy ) / Rlength;
             //nano /= TimeSpan.TicksPerMillisecond;
             //nano *= 100L;
             //
             //var sw = Stopwatch.StartNew();
             //while ( sw.ElapsedMilliseconds < nano) ;
-            finaliseUpdate( nano );
+            try {
+                finaliseUpdate( nano );
+            } catch {
+                DoNotSellpFor = 1000;
+            }
         }
 
         static long nanoTime() {
