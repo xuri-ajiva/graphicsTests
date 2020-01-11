@@ -16,15 +16,44 @@ namespace OpenTKFramework {
         public GraphicsManager I;
         public GameWindow      Window = null;
 
+        /// <summary>
+        /// Hook up the initialize callback
+        /// already done:
+        ///     GraphicsManager.Instance.Initialize( this.Window );
+        ///     this.I = GraphicsManager.Instance;
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public abstract void Initialize(object sender, EventArgs e);
 
+        /// <summary>
+        /// Hook up the update callback
+        /// already done:
+        ///     Fps Calculated
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public abstract void Update(object sender, FrameEventArgs e);
 
+        /// <summary>
+        /// Hook up the render callback
+        /// already done:
+        ///     this.I.SwapBuffers();
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public abstract void Render(object sender, FrameEventArgs e);
 
+        /// <summary>
+        /// Hook up the shutdown callback
+        /// already done:
+        ///     GraphicsManager.Instance.Shutdown();
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public abstract void Shutdown(object sender, EventArgs e);
 
-        public GameWindow Create(Size s = default) {
+        public GameWindow Create(Size s = default,string title = "Game Name") {
             if ( s == default ) s = new Size( 800, 600 );
 
             // Create static (global) window instance
@@ -39,13 +68,12 @@ namespace OpenTKFramework {
             //// Hook up the shutdown callback
             //Window.Unload += new EventHandler<EventArgs>( Shutdown );
 
-            // Hook up the initialize callback
             this.Window.Load += delegate(object sender, EventArgs e) {
                 GraphicsManager.Instance.Initialize( this.Window );
                 this.I = GraphicsManager.Instance;
                 Initialize( sender, e );
             };
-            // Hook up the update callback
+            
             this.Window.UpdateFrame += delegate(object sender, FrameEventArgs e) {
                 this.totalFramesUpdated++;
                 this.numFrames  += 1;
@@ -59,20 +87,20 @@ namespace OpenTKFramework {
 
                 Update( sender, e );
             };
-            // Hook up the render callback
+
             this.Window.RenderFrame += delegate(object sender, FrameEventArgs e) {
                 this.totalFramesRendert++;
                 Render( sender, e );
                 this.I.SwapBuffers();
             };
-            // Hook up the shutdown callback
+            
             this.Window.Unload += delegate(object sender, EventArgs e) {
                 GraphicsManager.Instance.Shutdown();
                 Shutdown( sender, e );
             };
 
             // Set window title and size
-            this.Window.Title      = "Game Name";
+            this.Window.Title      = title;
             this.Window.ClientSize = s;
 
             return this.Window;

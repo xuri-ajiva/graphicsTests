@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "01", "01\01.csproj", "{3AF4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2DOpenTKFramework", "2DOpenTKFramework\2DOpenTKFramework.csproj", "{51025FFE-0064-4D96-99DF-DF6C96BBBD58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "02", "02\02.csproj", "{A8CD293A-837D-4797-942C-AE332CD82A4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{51025FFE-0064-4D96-99DF-DF6C96BBBD58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51025FFE-0064-4D96-99DF-DF6C96BBBD58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51025FFE-0064-4D96-99DF-DF6C96BBBD58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8CD293A-837D-4797-942C-AE332CD82A4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8CD293A-837D-4797-942C-AE332CD82A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8CD293A-837D-4797-942C-AE332CD82A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8CD293A-837D-4797-942C-AE332CD82A4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
