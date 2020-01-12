@@ -28,7 +28,7 @@ namespace _02 {
         private const int COLOR_HALF   = 255 / 2;
 
         private       float scale   = 1;
-        private const int   maxSize = 2000;
+        private const int   maxSize = 3000;
         byte[,]             areal   = new byte[maxSize, maxSize];
         private int         w, h, w2, h2, ox, oy;
 
@@ -46,26 +46,27 @@ namespace _02 {
             this.I.ClearScreen( Color.FromArgb( 1, 82, 82, 82 ) );
             SizeF s = new SizeF( this.scale, this.scale );
             this.Window.Title = "FPS: " + this.frameRate;
-            
-            for ( float i = 0; i < maxSize; i+=2/this.scale) {
-                for ( float j = 0; j < maxSize; j+=2/this.scale ) {
+
+            for ( float i = 0; i < maxSize; i += 2 / this.scale ) {
+                for ( float j = 0; j < maxSize; j += 2 / this.scale ) {
                     var x = i + this.ox;
                     var y = j + this.oy;
-                    
-                    if ( x < 0  || y < 0 ) continue;
+
+                    if ( this.scale * x < 0  || this.scale * y < 0 ) continue;
+                    if ( this.scale * x >= w || this.scale * y >= h ) continue;
+
+                    if ( x < 0        || y < 0 ) continue;
                     if ( x >= maxSize || y >= maxSize ) continue;
 
-                    var v = this.areal[(int)i,(int)j];
+                    var v = this.areal[(int) i, (int) j];
 
                     if ( v == 0 ) continue;
 
                     var p = new PointF( this.scale * x, this.scale * y );
 
-                    if ( p.X < 0  || p.Y < 0 ) continue;
-                    if ( p.X >= w || p.Y >= h ) continue;
-
                     //if ( Math.Abs( ( (int) p.X - p.X ) ) < this.scale/2 || Math.Abs( ( (int) p.Y - p.Y ) ) < this.scale /2)
-                        this.I.DrawRect( new RectangleF( p, s ), colorFromValue( v ) );
+                    this.I.DrawPoint( p, colorFromValue( v ) );
+                    //this.I.DrawRect( new RectangleF( p, new SizeF(1,1) ), colorFromValue( v ) );
                 }
             }
         }
@@ -160,85 +161,91 @@ namespace _02 {
                 Thread.Sleep( 1 );
             }
 
+            for ( int i = 0; i < 10; i++ ) {
+                this._creeps.Add( new Creep( Direction.n, new Point( ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ), ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ) ) ) );
+            }
+
             new Thread( Work ).Start();
 
             Run();
         }
 
-        Point             arnt      = new Point( maxSize / 2, maxSize / 2 );
-        private Direction direction = default;
+        List<Creep> _creeps = new List<Creep>( 10 );
+
 
         private void Work() {
             while ( true ) {
-                if ( this.arnt.X < 0 ) arnt.X        = 1;
-                if ( this.arnt.Y < 0 ) arnt.Y        = 1;
-                if ( this.arnt.Y >= maxSize ) arnt.Y = maxSize - 2;
-                if ( this.arnt.X >= maxSize ) arnt.X = maxSize - 2;
-                WorkDirection( this.areal[this.arnt.X, this.arnt.Y] );
+                foreach ( var c in this._creeps ) {
+                    if ( c.pos.X < 0 ) c.pos.X        = 1;
+                    if ( c.pos.Y < 0 ) c.pos.Y        = 1;
+                    if ( c.pos.Y >= maxSize ) c.pos.Y = maxSize - 2;
+                    if ( c.pos.X >= maxSize ) c.pos.X = maxSize - 2;
+                    WorkDirection( this.areal[c.pos.X, c.pos.Y], c );
+                }
             }
         }
 
         private List<bool> mv = new List<bool>();
 
-        void WorkDirection(byte value) {
+        void WorkDirection(byte value, Creep c) {
             bool icrese = true;
 
             bool dx = this.mv[value];
 
             if ( value == COLORS_I - 1 ) {
-                dx                                   = true;
-                icrese                               = false;
-                this.areal[this.arnt.X, this.arnt.Y] = 0;
+                dx                           = true;
+                icrese                       = false;
+                this.areal[c.pos.X, c.pos.Y] = 0;
             }
 
             if ( icrese )
-                this.areal[this.arnt.X, this.arnt.Y]++;
+                this.areal[c.pos.X, c.pos.Y]++;
 
-            switch (this.direction) {
+            switch (c.direction) {
                 case Direction.n:
                     if ( dx ) {
-                        this.arnt.X++;
-                        this.direction = Direction.o;
+                        c.pos.X++;
+                        c.direction = Direction.o;
                     }
                     else {
-                        this.arnt.X--;
-                        this.direction = Direction.w;
+                        c.pos.X--;
+                        c.direction = Direction.w;
                     }
 
                     break;
 
                 case Direction.s:
                     if ( !dx ) {
-                        this.arnt.X++;
-                        this.direction = Direction.o;
+                        c.pos.X++;
+                        c.direction = Direction.o;
                     }
                     else {
-                        this.arnt.X--;
-                        this.direction = Direction.w;
+                        c.pos.X--;
+                        c.direction = Direction.w;
                     }
 
                     break;
 
                 case Direction.o:
                     if ( dx ) {
-                        this.arnt.Y++;
-                        this.direction = Direction.s;
+                        c.pos.Y++;
+                        c.direction = Direction.s;
                     }
                     else {
-                        this.arnt.Y--;
-                        this.direction = Direction.n;
+                        c.pos.Y--;
+                        c.direction = Direction.n;
                     }
 
                     break;
 
                 case Direction.w:
                     if ( !dx ) {
-                        this.arnt.Y++;
-                        this.direction = Direction.s;
+                        c.pos.Y++;
+                        c.direction = Direction.s;
                     }
                     else {
-                        this.arnt.Y--;
-                        this.direction = Direction.n;
+                        c.pos.Y--;
+                        c.direction = Direction.n;
                     }
 
                     break;
@@ -249,6 +256,17 @@ namespace _02 {
 
         enum Direction {
             n, s, o, w
+        }
+
+        class Creep {
+            public Point     pos;
+            public Direction direction;
+
+            /// <inheritdoc />
+            public Creep(Direction direction, Point pos) {
+                this.direction = direction;
+                this.pos       = pos;
+            }
         }
     }
 }
