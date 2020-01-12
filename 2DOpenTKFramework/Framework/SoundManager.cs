@@ -5,7 +5,7 @@ using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 
 namespace OpenTKFramework.Framework {
-    class SoundManager {
+    public  class SoundManager {
         private class SoundInstance {
             public int bufferHandle = -1;
             public int soundSource = -1;

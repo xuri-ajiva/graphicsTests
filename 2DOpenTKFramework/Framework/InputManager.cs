@@ -9,7 +9,7 @@ using OpenTK.Input;
 #endregion
 
 namespace OpenTKFramework.Framework {
-    internal class InputManager {
+    public class InputManager {
         private static InputManager      instance;
         private        ControllerState[] curJoyDown;
         private        bool[]            curKeysDown;
@@ -29,7 +29,7 @@ namespace OpenTKFramework.Framework {
         private bool[]              prevKeysDown;
         private bool[]              prevMouseDown;
 
-        private InputManager() { }
+        public InputManager() { }
 
         public static InputManager Instance {
             get {
@@ -83,7 +83,7 @@ namespace OpenTKFramework.Framework {
             }
         }
 
-        [Obsolete]
+        //[Obsolete]
         public void Initialize(GameWindow window) {
             this.game = window;
 
