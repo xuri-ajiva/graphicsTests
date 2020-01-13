@@ -61,7 +61,7 @@ namespace _02 {
         /// <inheritdoc />
         public override void Render(object sender, FrameEventArgs e) {
             this.I.ClearScreen( Color.FromArgb( 1, 82, 82, 82 ) );
-            this.Window.Title = "     ArraySize: " + maxSize + "     Position: {x: " + ox + ",y: " + oy + "}     FPS: " + this.frameRate + "     Scale: " + this.scale + "     PixelSize: " + this.PS;
+            this.Window.Title = "     ArraySize: " + maxSize + "     Position: {x: " + ox + ",y: " + oy + "}" + "     Moves: " + IntText( Moves ) + "     FPS: " + this.frameRate + "     Scale: " + this.scale + "     PixelSize: " + this.PS;
 
             //while ( this._update.Count > 0 ) {
             //    var p = this._update.Dequeue();
@@ -128,7 +128,6 @@ namespace _02 {
             }
         }
 
-
         private Color colorFromValue(byte b) {
             return Color.FromArgb( (int) ( ( Math.Sin( b * COLOR_STEP_I ) + 1 ) * COLOR_HALF ), (int) ( ( Math.Cos( b * COLOR_STEP_I ) + 1 ) * COLOR_HALF ), (int) ( ( -Math.Sin( b * COLOR_STEP_I ) + 1 ) * COLOR_HALF ) );
 
@@ -153,6 +152,18 @@ namespace _02 {
         }
 
         #endregion
+
+        private static string IntText(long score) {
+            const int l = 2;
+
+            var s = score.ToString();
+
+            if ( s.Length < l + l ) return s;
+
+            var e = s.Length - l;
+
+            return s.Substring( 0, l ) + "," + s.Substring( l, l ) + "E+" + e.ToString( "D3" ); // + "  # " + score;
+        }
 
         private bool exit = true;
 
@@ -214,8 +225,8 @@ namespace _02 {
 
             this.Window.Closing += delegate {
                 if ( this.exit ) Environment.Exit( 0 );
-                else
-                { foreach ( var t in this._ts )
+                else {
+                    foreach ( var t in this._ts )
                         t.Abort();
                     this.areal = null;
                     GC.Collect();
@@ -226,7 +237,7 @@ namespace _02 {
             this.h2 = this.Window.ClientSize.Height / 2;
             this.w2 = this.Window.ClientSize.Width  / 2;
 
-            this.mv.AddRange( Enumerable.Repeat( false, COLORS_I+10 ) );
+            this.mv.AddRange( Enumerable.Repeat( false, COLORS_I * 2 ) );
 
             Random r = new Random();
 
@@ -236,6 +247,9 @@ namespace _02 {
                 this.mv[r.Next( 0, COLORS_I )] = v;
                 Thread.Sleep( 1 );
             }
+
+            bool True = true;
+
             //this.mv[2] = true;
             //this.mv[8] = true;
 
@@ -264,18 +278,35 @@ namespace _02 {
             //this.mv[78] = true;
             //this.mv[81] = true;
 
+            mv[10] = true;
+            mv[11] = true;
+            mv[13] = true;
+            mv[36] = true;
+            mv[38] = true;
+
+            mv[1]  = True;  
+            mv[2]  = True;  
+            mv[10] = True; 
+            mv[11] = True; 
+            mv[13] = True; 
+            mv[36] = True; 
+            mv[37] = True; 
+            mv[38] = True; 
+
             //for ( int i = 0; i < 1; i++ ) {
             //    this._creeps.Add( new Creep( Direction.n, new Point( ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ), ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ) ) ) );
             //}
 
-            this._creeps.Add( new Creep( Direction.n, new Point( maxSize     / 4, maxSize     / 4 ) ) );
-            this._creeps.Add( new Creep( Direction.n, new Point( maxSize / 4 * 2, maxSize / 4 * 2 ) ) );
-            this._creeps.Add( new Creep( Direction.n, new Point( maxSize / 4 * 3, maxSize / 4 * 3 ) ) );
+            const int creeps = 8;
+
+            for ( int i = 1; i < creeps+1; i++ ) {
+                this._creeps.Add( new Creep( Direction.n, new Point( maxSize / ( creeps + 1 ) * i, maxSize / ( creeps + 1 ) *i ) ) );
+            }
 
             Console.WriteLine( "setupDirections" );
 
             for ( var i = 0; i < COLORS_I; i++ ) {
-                Console.WriteLine( "mv[" + i + "] = "+this.mv[i]+";           /// # " + ( this.mv[i] ? "R" : "L" ) );
+                Console.WriteLine( "mv[" + i + "] = " + this.mv[i] + ";           /// # " + ( this.mv[i] ? "R" : "L" ) );
             }
 
             foreach ( var c in this._creeps ) {
@@ -289,17 +320,37 @@ namespace _02 {
 
         private List<Creep> _creeps = new List<Creep>();
 
+        public static long Moves = 0;
+
 
         private void Work(Creep c) {
             while ( true ) {
-                if ( c.pos.X < 0 ) c.pos.X        = 1;
-                if ( c.pos.Y < 0 ) c.pos.Y        = 1;
-                if ( c.pos.Y >= maxSize ) c.pos.Y = maxSize - 2;
-                if ( c.pos.X >= maxSize ) c.pos.X = maxSize - 2;
-                WorkDirection( this.areal[c.pos.X, c.pos.Y], c );
-
+                if ( c.pos.X < 1 ) c.pos.X            = 1;
+                if ( c.pos.Y < 1 ) c.pos.Y            = 1;
+                if ( c.pos.Y >= maxSize - 1 ) c.pos.Y = maxSize - 2;
+                if ( c.pos.X >= maxSize - 1 ) c.pos.X = maxSize - 2;
+                WorkDirection( GetArealByCreep( c ), c );
+                Moves++;
                 //Thread.Sleep( 1 );
             }
+        }
+
+        byte GetArealByCreep(Creep c) {
+            if ( c.pos.X < 1 ) c.pos.X            = 1;
+            if ( c.pos.Y < 1 ) c.pos.Y            = 1;
+            if ( c.pos.Y >= maxSize - 1 ) c.pos.Y = maxSize - 2;
+            if ( c.pos.X >= maxSize - 1 ) c.pos.X = maxSize - 2;
+
+            return this.areal[c.pos.X, c.pos.Y];
+        }
+
+        void SetArealByCreep(Creep c, byte value) {
+            if ( c.pos.X < 1 ) c.pos.X            = 1;
+            if ( c.pos.Y < 1 ) c.pos.Y            = 1;
+            if ( c.pos.Y >= maxSize - 1 ) c.pos.Y = maxSize - 2;
+            if ( c.pos.X >= maxSize - 1 ) c.pos.X = maxSize - 2;
+
+            this.areal[c.pos.X, c.pos.Y] = value;
         }
 
         private List<bool> mv = new List<bool>();
@@ -310,13 +361,13 @@ namespace _02 {
             bool dx = this.mv[value];
 
             if ( value >= COLORS_I - 1 ) {
-                dx                           = true;
-                icrese                       = false;
-                this.areal[c.pos.X, c.pos.Y] = 0;
+                dx     = true;
+                icrese = false;
+                SetArealByCreep( c, 0 );
             }
 
             if ( icrese )
-                this.areal[c.pos.X, c.pos.Y]++;
+                SetArealByCreep( c, (byte) ( GetArealByCreep( c ) + 1 ) );
 
             switch (c.direction) {
                 case Direction.n:
@@ -366,6 +417,7 @@ namespace _02 {
                     }
 
                     break;
+                default: break;
             }
 
             //this._update.Enqueue( new paket(c.pos, this.areal[c.pos.X, c.pos.Y]) );
