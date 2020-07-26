@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -43,9 +45,9 @@ namespace _02 {
         private const int COLOR_STEP_I = 240 / COLORS_I;
         private const int COLOR_HALF   = 255 / 2;
 
-        private       float   scale   = .05F;
+        private       float   scale   = .1F;
         private       float   PS      = 20;
-        private const int     maxSize = 20000;
+        private const int     maxSize = 10000;
         private       byte[,] areal   = new byte[maxSize, maxSize];
         private       int     w, h, w2, h2, ox, oy;
 
@@ -108,15 +110,17 @@ namespace _02 {
                     var x = i + this.ox;
                     var y = j + this.oy;
 
-                    if ( x < 0        || y < 0 ) continue;
-                    if ( x >= maxSize || y >= maxSize ) continue;
+                    if ( x < 0 || y < 0 ) continue;
+
+                    if ( x >= maxSize || y >= maxSize ) break;
 
                     var v = this.areal[(int) i, (int) j];
 
                     if ( v == 0 ) continue;
 
-                    if ( this.scale * x < 0  || this.scale * y < 0 ) continue;
-                    if ( this.scale * x >= w || this.scale * y >= h ) continue;
+                    if ( this.scale * x < 0 || this.scale * y < 0 ) continue;
+
+                    if ( this.scale * x >= w || this.scale * y >= h ) break;
 
                     var p = new PointF( this.scale * x, this.scale * y );
                     var s = new SizeF( this.scale * ( x + this.PS ) - this.scale * x, this.scale * ( y + PS ) - this.scale * y );
@@ -188,25 +192,33 @@ namespace _02 {
             this.Window.VSync = VSyncMode.Off;
 
             this.Window.KeyDown += delegate(object s, KeyboardKeyEventArgs e) {
-                if ( e.Key == Key.Escape ) {
-                    exit = false;
-                    this.Window.Close();
-                }
+                switch (e.Key) {
+                    case Key.Escape:
+                        this.exit = false;
+                        this.Window.Close();
 
-                if ( e.Key == Key.ControlLeft ) {
-                    this.fe = !this.fe;
-                    Console.WriteLine( this.fe );
+                        break;
+
+                    case Key.ControlLeft:
+                        this.fe = !this.fe;
+
+                        break;
+
+                    case Key.F:
+                        new Thread( ConvertToBitmap ) { ApartmentState = ApartmentState.STA }.Start();
+
+                        break;
                 }
             };
 
             this.Window.MouseWheel += delegate(object s, MouseWheelEventArgs a) {
                 if ( fe ) {
                     this.PS += a.DeltaPrecise * .1F;
-                    Console.WriteLine( a.Delta + " | " + this.PS );
+                    //Console.WriteLine( a.Delta + " | " + this.PS );
                 }
                 else {
                     this.scale += a.DeltaPrecise * .1F;
-                    Console.WriteLine( a.Delta + " | " + this.scale );
+                    //Console.WriteLine( a.Delta + " | " + this.scale );
                 }
 
                 if ( this.scale <= 0 ) this.scale = 0.05F;
@@ -278,29 +290,42 @@ namespace _02 {
             //this.mv[78] = true;
             //this.mv[81] = true;
 
-            mv[10] = true;
-            mv[11] = true;
-            mv[13] = true;
-            mv[36] = true;
-            mv[38] = true;
+            //mv[10] = true;
+            //mv[11] = true;
+            //mv[13] = true;
+            //mv[36] = true;
+            //mv[38] = true;
+            //
+            //mv[1]  = True;
+            //mv[2]  = True;
+            //mv[10] = True;
+            //mv[11] = True;
+            //mv[13] = True;
+            //mv[36] = True;
+            //mv[37] = True;
+            //mv[38] = True;
 
-            mv[1]  = True;  
-            mv[2]  = True;  
-            mv[10] = True; 
-            mv[11] = True; 
-            mv[13] = True; 
-            mv[36] = True; 
-            mv[37] = True; 
-            mv[38] = True; 
+            //mv[1] = True; /// # R
+            //mv[2] = True; 
+            //mv[4] = True;  
+            //mv[10] = True; /// # R
+            //mv[11] = True; /// # R
+            //mv[12] = True; /// # R
+            //mv[13] = True; 
+            //mv[17] = True;  
+            //mv[21] = True;   
+            //mv[36] = True; /// # R
+            //mv[37] = True; /// # R
+            //mv[38] = True; 
 
             //for ( int i = 0; i < 1; i++ ) {
             //    this._creeps.Add( new Creep( Direction.n, new Point( ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ), ( maxSize / 2 ) + (int) ( i * r.NextDouble() * 100 ) ) ) );
             //}
 
-            const int creeps = 8;
+            const int creeps = 4;
 
-            for ( int i = 1; i < creeps+1; i++ ) {
-                this._creeps.Add( new Creep( Direction.n, new Point( maxSize / ( creeps + 1 ) * i, maxSize / ( creeps + 1 ) *i ) ) );
+            for ( int i = 1; i < creeps + 1; i++ ) {
+                this._creeps.Add( new Creep( Direction.n, new Point( maxSize / ( creeps + 1 ) * i, maxSize / ( creeps + 1 ) * i ) ) );
             }
 
             Console.WriteLine( "setupDirections" );
@@ -316,6 +341,49 @@ namespace _02 {
             }
 
             Run();
+        }
+
+        private void ConvertToBitmap() {
+            unsafe {
+                var s = new SaveFileDialog { Filter = "*.png|*.png" };
+                int len = maxSize * maxSize *4;
+
+                if ( s.ShowDialog() != DialogResult.OK ) return;
+            
+                var bm = new Bitmap( maxSize, maxSize);
+
+                //var p = Marshal.AllocHGlobal( len );
+                byte[] arr = new byte[len];
+
+                for ( int i = 0; i < maxSize; i++ ) {
+                    for ( int j = 0; j < maxSize; j++ ) {
+                        arr[i * maxSize        + j *4] = this.areal[i, j];
+                        arr[i * maxSize + j *4 +1]     = 0;
+                        arr[i * maxSize + j *4 +2]     = 0;
+                        arr[i * maxSize + j *4 +3]     = 255;
+                    }
+                }
+
+                //var data = bm.LockBits( new Rectangle( 0, 0, maxSize, maxSize ), ImageLockMode.ReadWrite, PixelFormat.Max );
+            
+                BitmapData BtmDt   = bm.LockBits( new Rectangle( 0, 0, bm.Width, bm.Height ), ImageLockMode.ReadWrite, bm.PixelFormat );
+                IntPtr     pointer = BtmDt.Scan0;
+                int        size    = Math.Abs( BtmDt.Stride ) * bm.Height;
+                //byte[]     pixels  = new byte[size];
+                //Marshal.Copy( pointer, pixels, 0, size );
+            
+
+                Marshal.Copy( arr, 0, pointer, size );
+                bm.UnlockBits( BtmDt );
+
+                //for ( int i = 0; i < maxSize; i++ ) {
+                //    for ( int j = 0; j < maxSize; j++ ) {
+                //        bm.SetPixel( i, j, colorFromValue( this.areal[i, j] ) );
+                //    }
+                //}
+
+                bm.Save( s.FileName, ImageFormat.Png );
+            }
         }
 
         private List<Creep> _creeps = new List<Creep>();
